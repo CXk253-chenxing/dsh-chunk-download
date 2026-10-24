@@ -104,11 +104,17 @@ Direct links often require identifying headers:
 
 ## Benchmarks
 
-| Scenario | curl (1 connection) | this plugin | Gain |
+> Measured 2026-10-25 on a home link against a domestic CDN, same file, same time window.
+
+| Scenario | single connection | this plugin | Gain |
 | --- | --- | --- | --- |
-| 4 MB, server caps each connection at 256 KB/s, 8 connections | 15.86 s | **2.03 s** | **7.8×** |
-| 2 MB, same setup (`bench/speedup.mjs`) | 8.32 s | **1.26 s** | **6.6×** |
-| 50.65 MB real CDN (npmmirror, single connection unthrottled) | 7.5 s | 7.05 s | ≈1× (link saturated) |
+| 2 MB, local server capping **each connection** at 256 KB/s, 8 connections (`node bench/speedup.mjs 2`) | 8.34 s | **1.32 s** | **6.3×** |
+| 44.98 MB real CDN (npmmirror), 8 connections, no throttling | 4.5–5.8 s (7.4–9.5 MB/s) | **2.1–2.3 s (18–21 MB/s)** | **≈2.4×** |
+| same file while the CDN throttles per IP | 8–9 s | 8–9 s | ≈1× (per-IP cap) |
+
+The gain is decided by the server: per-connection throttling ⇒ several times faster; a saturated single
+connection or per-IP throttling ⇒ parity, never slower. 16 connections tripped npmmirror's rate limit in one
+run (31 s for the same file that took 2.1 s with 8), so 8 is the safer default there.
 
 ## Development
 
