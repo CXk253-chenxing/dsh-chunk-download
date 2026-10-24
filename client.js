@@ -501,7 +501,8 @@ window.__ModuleLoader__.load({
     }
 
     exports.apply = apply
-    exports.__internal = { fmtBytes, fmtSpeed, fmtEta, ratioOf, pctText }
+    // 仅供测试：格式化函数与状态仓库（生产代码不依赖）
+    exports.__internal = { fmtBytes, fmtSpeed, fmtEta, ratioOf, pctText, store }
 
     return module.exports
   },

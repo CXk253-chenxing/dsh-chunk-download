@@ -83,7 +83,8 @@ chunk-download   ──┬── 1/8 ──┬── 2/8 ──┬── 3/8 ─
 ```bash
 git clone https://github.com/CXk253-chenxing/dsh-chunk-download.git
 cd dsh-chunk-download
-node --test                # 23 个用例，全部用本地 HTTP 服务器，无需外网
+node --test                # 24 个用例，全部用本地 HTTP 服务器，无需外网
+npm i -D react react-dom && node --test test/render.test.mjs   # 可选：把 UI 组件真渲染一遍
 node bench/speedup.mjs 2   # 加速比演示
 ```
 
