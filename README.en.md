@@ -6,8 +6,8 @@
 
 **A multi-connection HTTP Range downloader for AI agents — resume, rate limit, several times faster than single-connection `curl`.**
 
-[![CI](https://img.shields.io/github/actions/workflow/status/<your-name>/dsh-chunk-download/ci.yml?style=flat-square&label=CI)](.github/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/<your-name>/dsh-chunk-download?style=flat-square&color=3DA639)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/CXk253-chenxing/dsh-chunk-download/ci.yml?style=flat-square&label=CI)](.github/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/CXk253-chenxing/dsh-chunk-download?style=flat-square&color=3DA639)](LICENSE)
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?style=flat-square&logo=node.js&logoColor=white)
 
 [中文](README.md) · Features · Install · Usage · [How it works](docs/how-it-works.md)
@@ -113,7 +113,7 @@ Direct links often require identifying headers:
 ## Development
 
 ```bash
-git clone https://github.com/<your-name>/dsh-chunk-download.git
+git clone https://github.com/CXk253-chenxing/dsh-chunk-download.git
 cd dsh-chunk-download
 node --test                 # 16 tests, local HTTP servers only
 node bench/speedup.mjs 2    # speed-up demo

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Range 分片并发 + 断点续传的下载插件：给 AI Agent 一条比 curl 单连接快数倍的高速下载通道，跨平台",
-  "author": "<your-name>",
+  "author": "CXk253-chenxing",
   "license": "MIT",
   "main": "index.js",
   "exports": {
@@ -46,11 +46,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/<your-name>/dsh-chunk-download.git"
+    "url": "git+https://github.com/CXk253-chenxing/dsh-chunk-download.git"
   },
-  "homepage": "https://github.com/<your-name>/dsh-chunk-download#readme",
+  "homepage": "https://github.com/CXk253-chenxing/dsh-chunk-download#readme",
   "bugs": {
-    "url": "https://github.com/<your-name>/dsh-chunk-download/issues"
+    "url": "https://github.com/CXk253-chenxing/dsh-chunk-download/issues"
   },
   "dsh": {
     "bundle": {
