@@ -113,7 +113,30 @@ Accept-Encoding: identity
 - 分片并发：每个任务内部 `min(connections, 剩余分片数)` 个 worker；
 - 单请求停滞：看门狗 30 秒没收到数据就 abort 该请求，交给分片级重试。
 
-## 8. 参数速查
+## 8. 下载后的三道关
+
+`#finish` 里的顺序是固定的，任何一步失败都会让任务变成 `failed`：
+
+1. **摘要校验**（可选）：按 1MB 块读整个文件算 SHA-256，与 `sha256` 参数逐字比对；
+   不一致时抛错并把 `verification` 写进任务状态，`deleteOnMismatch` 为真则删掉坏文件。
+2. **导出到手机**（可选）：走 3090 设备桥的 `/app/export`；桌面端没有 token 文件就跳过。
+3. **完成通知**：桥存在时发一条通知栏消息，失败静默。
+
+写盘本身用「先写 `.part` → 完成后 rename」的原子收尾；Windows 上 rename 不会覆盖同名文件，
+所以那里会先删目标再 rename（见 `#renameIntoPlace`）。
+
+## 9. 界面数据从哪来
+
+浏览器半身不碰文件系统，只读宿主注册的两个同源接口：
+
+| 接口 | 用途 |
+| --- | --- |
+| `GET /chunk-download/tasks` | `{ tasks, summary, serverTime }`，任务快照数组（最多 30 条） |
+| `POST /chunk-download/control` | `{ id?, action, deleteFile? }`，与 `chunk_download_control` 工具同一套逻辑 |
+
+轮询策略：有活动任务 1s，空闲 4s，`document.hidden` 时降频；弹窗关闭后停止。
+
+## 10. 参数速查
 
 | 参数 | 位置 | 建议 |
 | --- | --- | --- |

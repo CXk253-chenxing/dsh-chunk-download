@@ -39,6 +39,12 @@ connection. Runs on **Linux / macOS / Windows**; on Android it can also drop the
 | 📱 | Export to phone | copies the finished file into `Download/DeepSeekHarness` through the DSH device bridge |
 | 🔁 | Dedupe | the same URL + target reuses the existing task |
 | 🖥 | Cross-platform | Linux / macOS / Windows, Node ≥ 20, no native deps |
+| ✅ | SHA-256 verification | pass `sha256`; mismatch fails the task (optionally deletes the file) |
+| 🗂 | If-exists policy | `overwrite` / `skip` / `rename` |
+| 💽 | Disk preflight | refuses before starting when free space is short |
+| 📦 | Batch downloads | `urls[]`, one result per entry |
+| 🔔 | Completion notice | phone notification via the device bridge (desktop skips) |
+| 📊 | Live UI | session-header chip, sidebar row and a floating task panel |
 | 🧩 | Zero dependencies | Node built-ins only |
 
 ## Install
@@ -63,6 +69,17 @@ The plugin also injects a short system-prompt section telling the agent to prefe
 
 Without a device bridge, `export: true` is skipped and recorded as `exportError`; **the download itself is unaffected**.
 CI runs the same tests on Ubuntu (Node 20/22/24), macOS (22) and Windows (22).
+
+## UI
+
+| Where | What |
+| --- | --- |
+| Session title bar (phone + desktop) | progress pill: ring + percent + live speed, `N tasks` when several |
+| Desktop sidebar footer | `Download · N tasks` with a mini progress bar |
+| Click either | floating panel / mobile bottom sheet: task list, speed, ETA, pause / resume / cancel, pause-all, clear-finished |
+
+The panel polls `GET /chunk-download/tasks` (1 s while active, 4 s idle, paused when the page is hidden) and posts to
+`POST /chunk-download/control`. Colours come from DSH theme tokens; icons are inline SVG.
 
 ## Usage
 

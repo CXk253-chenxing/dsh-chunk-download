@@ -18,7 +18,8 @@
 ***
 
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 插件：把 **HTTP Range 分片下载** 做成 Agent 可直接调用的工具 ——
-多连接并发、断点续传、暂停/恢复、限速，比 `curl` 单连接快数倍；**Linux / macOS / Windows 通用**，Android 上还能一键送进 `Download/DeepSeekHarness`。
+多连接并发、断点续传、暂停/恢复、限速、摘要校验，比 `curl` 单连接快数倍；**Linux / macOS / Windows 通用**，
+Android 上还能一键送进 `Download/DeepSeekHarness`。桌面侧边栏与会话标题栏都有实时进度。
 
 > 单连接已经跑满带宽时并行不会更快 —— 加速收益来自**服务端对单连接限速**的场景（网盘直链、部分 CDN、GitHub Releases 等），
 > 这在实测里通常就是数倍差距。
@@ -35,7 +36,12 @@
 | 🛡 | **严格校验** | `Content-Range` 与请求必须匹配、实收字节数必须等于区间、文件大小变化即报错 |
 | 🔀 | **自动回退单流** | 服务端忽略 Range（返回 200）或响应被 gzip 压缩时，自动退回单流下载，绝不写花文件 |
 | 🕵️ | **停滞看门狗** | 单请求 30s 没数据即掐断重试，慢连接不拖死整个任务 |
-| 📊 | **实时进度** | 进度条 / 速度 / ETA / 分片完成数 / 队列汇总 |
+| 📊 | **实时进度** | 桌面侧边栏 + 会话标题栏胶囊 + 浮动面板；工具侧也有进度条 / 速度 / ETA / 分片数 |
+| ✅ | **SHA-256 校验** | 传 `sha256`，下完逐字节核对；不匹配置为失败，可选删坏文件 |
+| 🗂 | **同名策略** | `ifExists: overwrite / skip / rename`（另存为 `name (1).ext`） |
+| 💽 | **磁盘预检** | 远端给了大小、本地空间不足时，开下前就拒绝 |
+| 📦 | **批量下载** | 一次 `urls` 提交多条，逐条给出结果，一条失败不影响其余 |
+| 🔔 | **完成通知** | 手机端走 3090 设备桥发通知栏消息；桌面端自动跳过 |
 | 📱 | **送进手机 Download** | 完成后通过 DSH 设备桥导出到 `Download/DeepSeekHarness` |
 | 🔁 | **同链接去重** | 同一 URL + 同一目标文件已有任务时直接复用，不重复下载 |
 | 🖥 | **跨平台** | Linux / macOS / Windows，Node ≥20；纯 Node 实现，无原生依赖 |
@@ -77,7 +83,7 @@ chunk-download   ──┬── 1/8 ──┬── 2/8 ──┬── 3/8 ─
 ```bash
 git clone https://github.com/CXk253-chenxing/dsh-chunk-download.git
 cd dsh-chunk-download
-node --test                # 16 个用例，全部用本地 HTTP 服务器，无需外网
+node --test                # 23 个用例，全部用本地 HTTP 服务器，无需外网
 node bench/speedup.mjs 2   # 加速比演示
 ```
 
@@ -91,6 +97,19 @@ node bench/speedup.mjs 2   # 加速比演示
 桌面端没有设备桥时，`export: true` 会被跳过并在任务里记 `exportError`（"已跳过导出；文件已保存在本地"），**下载不受影响**。
 CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测试。
 
+## 界面
+
+装好后 DSH Web GUI 里会多出两处「安静但看得见」的进度，不用打开设置：
+
+| 位置 | 表现 |
+| --- | --- |
+| **会话标题栏**（手机 + 桌面） | 进度胶囊：环形进度 + 百分比 + 实时速度；多任务时显示「N 个」 |
+| **桌面侧边栏底部** | 一行摘要「下载 · N 个任务」+ 迷你进度条 + 百分比 |
+| 点任意一处 | 浮动面板 / 手机底部抽屉：任务列表、速度、剩余时间、暂停 / 继续 / 取消、全部暂停、清理已完成 |
+
+数据来自宿主注册的同源接口（`GET /chunk-download/tasks`，有任务时 1s 轮询、空闲降到 4s、页面隐藏时暂停；
+操作走 `POST /chunk-download/control`）。所有颜色取 DSH 主题令牌，明暗主题自动适配；图标为内联 SVG。
+
 ## 用法
 
 ### 1. 下载一个文件
@@ -102,6 +121,8 @@ CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测�
   "dir": "/root/Downloads",   // 可选，默认 ~/Downloads
   "filename": "big.iso",      // 可选，默认取 Content-Disposition / URL 末段
   "connections": 16,          // 可选，1~64，默认 8
+  "sha256": "74bb0f3a…",      // 可选，下完校验摘要
+  "ifExists": "rename",       // 可选，同名文件：overwrite / skip / rename
   "export": true,             // 可选，下完送进手机 Download/DeepSeekHarness
   "waitMs": 60000             // 可选，阻塞等它下完（否则立即返回任务 id）
 }
@@ -141,6 +162,22 @@ CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测�
 { "id": "dl_xxx", "timeoutMs": 120000 }
 ```
 
+### 5. 批量下载
+
+```jsonc
+// chunk_download
+{
+  "urls": [
+    "https://example.com/a.zip",
+    "https://example.com/b.zip"
+  ],
+  "dir": "/root/Downloads",
+  "connections": 8
+}
+```
+
+一次最多 20 条；逐条返回结果，某条失败不影响其余。
+
 ### 网盘直链（需要带识别头）
 
 ```jsonc
@@ -171,6 +208,7 @@ CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测�
 | `retries` | `4` | 单分片重试次数 |
 | `requestTimeoutMs` | `20000` | 探测 / 建连超时 |
 | `stallTimeoutMs` | `30000` | 单请求停滞多久判定死连接 |
+| `notifyOnComplete` | `true` | 下载完成后发手机通知（桌面端自动跳过） |
 | `stateDir` | `$DSH_HOME/chunk-download` | 任务状态目录（续传依赖它） |
 | `promptSection` | `true` | 是否注入“下载优先用本插件”的系统提示 |
 
@@ -219,7 +257,8 @@ CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测�
 
 ```
 dsh-chunk-download/
-├── index.js                 # 插件入口：注册 4 个工具 + 系统提示
+├── index.js                 # 插件入口：注册 4 个工具 + 系统提示 + 进度接口
+├── client.js                # 浏览器半身：侧边栏 / 标题栏 / 浮动面板
 ├── lib/engine.js            # 下载内核（探测/分片/并发/续传/限速/队列/持久化）
 ├── lib/format.js            # 进度条与人类可读文案
 ├── cordis.patch.yml         # 插件层挂载配置

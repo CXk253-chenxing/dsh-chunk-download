@@ -14,3 +14,5 @@
         exportToPhone: false
         # 重启后自动续传上次没下完的任务
         autoResume: true
+        # 下载完成后发手机通知（走 3090 设备桥；桌面端自动跳过）
+        notifyOnComplete: true

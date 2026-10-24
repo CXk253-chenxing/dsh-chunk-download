@@ -1,6 +1,6 @@
 {
   "name": "dsh-chunk-download",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Range 分片并发 + 断点续传的下载插件：给 AI Agent 一条比 curl 单连接快数倍的高速下载通道，跨平台",
   "author": "CXk253-chenxing",
@@ -8,11 +8,13 @@
   "main": "index.js",
   "exports": {
     ".": "./index.js",
+    "./client": "./client.js",
     "./package.json": "./package.json",
     "./locale/*.json": "./locale/*.json"
   },
   "files": [
     "index.js",
+    "client.js",
     "lib/*.js",
     "locale/*.json",
     "docs/*.md",
@@ -55,6 +57,12 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
     }
   }
 }

@@ -30,6 +30,7 @@ function newEngine(dir, stateDir, overrides = {}) {
     retries: 3,
     requestTimeoutMs: 5000,
     stallTimeoutMs: 8000,
+    notifyOnComplete: false,
     log: () => {},
     ...overrides,
   })
@@ -279,6 +280,94 @@ test('桌面端没有设备桥：导出被跳过，下载照常完成', async ()
     assert.match(String(result.task.exportError ?? ''), /设备桥/, '应给出"没有设备桥"的说明而不是报错')
     const written = await fsp.readFile(path.join(root, 'out', 'desktop.bin'))
     assert.equal(sha256(written), sha256(payload))
+  } finally {
+    await engine.shutdown()
+    await server.close()
+  }
+})
+
+test('同名文件策略：skip 跳过 / rename 另存', async () => {
+  const payload = makePayload(300 * 1024)
+  const server = await startFileServer({ payload })
+  const root = await makeTempDir()
+  const engine = newEngine(path.join(root, 'out'), path.join(root, 'state'))
+  try {
+    await engine.start()
+    const first = await engine.addTask({ url: server.url, filename: 'dup.bin' })
+    await engine.waitFor(first.id, { timeoutMs: 30000 })
+
+    const skipped = await engine.addTask({ url: server.url, filename: 'dup.bin', ifExists: 'skip' })
+    assert.equal(skipped.skipped, true, 'ifExists=skip 应直接返回 skipped')
+    assert.equal(skipped.id, null)
+
+    const renamed = await engine.addTask({ url: server.url, filename: 'dup.bin', ifExists: 'rename' })
+    assert.equal(renamed.filename, 'dup (1).bin', '改名应避开同名文件')
+    const done = await engine.waitFor(renamed.id, { timeoutMs: 30000 })
+    assert.equal(done.task.status, TASK_STATUS.COMPLETED)
+    const written = await fsp.readFile(path.join(root, 'out', 'dup (1).bin'))
+    assert.equal(sha256(written), sha256(payload))
+  } finally {
+    await engine.shutdown()
+    await server.close()
+  }
+})
+
+test('SHA-256 校验：通过 / 不通过（可选删坏文件）', async () => {
+  const payload = makePayload(400 * 1024)
+  const good = sha256(payload)
+  const server = await startFileServer({ payload })
+  const root = await makeTempDir()
+  const engine = newEngine(path.join(root, 'out'), path.join(root, 'state'))
+  try {
+    await engine.start()
+
+    const okTask = await engine.addTask({ url: server.url, filename: 'good.bin', sha256: good })
+    const okResult = await engine.waitFor(okTask.id, { timeoutMs: 30000 })
+    assert.equal(okResult.task.status, TASK_STATUS.COMPLETED)
+    assert.equal(okResult.task.verification.ok, true)
+
+    const badTask = await engine.addTask({ url: server.url, filename: 'bad.bin', sha256: '00'.repeat(32) })
+    const badResult = await engine.waitFor(badTask.id, { timeoutMs: 30000 })
+    assert.equal(badResult.task.status, TASK_STATUS.FAILED, '校验失败应标记 failed')
+    assert.match(String(badResult.task.error), /SHA-256/)
+    await fsp.access(path.join(root, 'out', 'bad.bin'))
+
+    const badTask2 = await engine.addTask({
+      url: server.url, filename: 'bad2.bin', sha256: '00'.repeat(32), deleteOnMismatch: true,
+    })
+    const badResult2 = await engine.waitFor(badTask2.id, { timeoutMs: 30000 })
+    assert.equal(badResult2.task.status, TASK_STATUS.FAILED)
+    await assert.rejects(fsp.access(path.join(root, 'out', 'bad2.bin')), 'deleteOnMismatch 应删掉坏文件')
+  } finally {
+    await engine.shutdown()
+    await server.close()
+  }
+})
+
+test('批量控制：pauseAll / resumeAll / clearFinished', async () => {
+  const payload = makePayload(6 * 1024 * 1024)
+  const server = await startFileServer({ payload, chunkDelayMs: 20 })
+  const root = await makeTempDir()
+  const engine = newEngine(path.join(root, 'out'), path.join(root, 'state'), { connections: 1 })
+  try {
+    await engine.start()
+    const a = await engine.addTask({ url: server.url, filename: 'a.bin' })
+    const b = await engine.addTask({ url: server.url, filename: 'b.bin' })
+    await new Promise((resolve) => setTimeout(resolve, 250))
+
+    const paused = await engine.pauseAll()
+    assert.equal(paused.summary.downloading, 0, 'pauseAll 后不应还有下载中的任务')
+    assert.ok(paused.summary.paused >= 1)
+
+    const resumed = await engine.resumeAll()
+    assert.ok((resumed.summary.queued + resumed.summary.downloading) >= 1, 'resumeAll 应重新排队')
+
+    await engine.waitFor(a.id, { timeoutMs: 60000 })
+    await engine.waitFor(b.id, { timeoutMs: 60000 })
+    const cleared = await engine.clearFinished()
+    assert.equal(cleared.tasks.length, 0, 'clearFinished 应清掉已完成记录')
+    await fsp.access(path.join(root, 'out', 'a.bin'))
+    await fsp.access(path.join(root, 'out', 'b.bin'))
   } finally {
     await engine.shutdown()
     await server.close()
