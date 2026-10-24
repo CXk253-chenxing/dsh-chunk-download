@@ -263,6 +263,28 @@ test('大文件 + 会压缩的服务端：分片请求同样不被压缩干扰',
   }
 })
 
+test('桌面端没有设备桥：导出被跳过，下载照常完成', async () => {
+  const payload = makePayload(512 * 1024)
+  const server = await startFileServer({ payload })
+  const root = await makeTempDir()
+  const engine = newEngine(path.join(root, 'out'), path.join(root, 'state'), {
+    bridgeUrl: 'http://127.0.0.1:1',
+    bridgeTokenFile: path.join(root, 'no-such-token'),
+  })
+  try {
+    await engine.start()
+    const task = await engine.addTask({ url: server.url, filename: 'desktop.bin', export: true })
+    const result = await engine.waitFor(task.id, { timeoutMs: 30000 })
+    assert.equal(result.task.status, TASK_STATUS.COMPLETED, `下载应成功，实际：${result.task.error}`)
+    assert.match(String(result.task.exportError ?? ''), /设备桥/, '应给出"没有设备桥"的说明而不是报错')
+    const written = await fsp.readFile(path.join(root, 'out', 'desktop.bin'))
+    assert.equal(sha256(written), sha256(payload))
+  } finally {
+    await engine.shutdown()
+    await server.close()
+  }
+})
+
 test('拒绝非 http(s) 直链', async () => {
   const root = await makeTempDir()
   const engine = newEngine(path.join(root, 'out'), path.join(root, 'state'))

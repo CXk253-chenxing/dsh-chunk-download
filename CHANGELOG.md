@@ -23,5 +23,7 @@
   - 任务队列（并发上限、FIFO）
   - 完成后通过 DSH 设备桥导出到手机 `Download/DeepSeekHarness`
 - 系统提示词注入：让 Agent 默认优先用本插件而不是 `curl`
-- 测试：15 个用例（引擎 12 + 插件层 3），全部使用本地 HTTP 服务器
+- 跨平台：Linux / macOS / Windows（Node ≥20）；Windows 覆盖同名目标文件前先删除
+- 桌面端无设备桥时自动跳过导出，不影响下载
+- 测试：16 个用例（引擎 13 + 插件层 3），全部使用本地 HTTP 服务器
 - 基准脚本 `bench/speedup.mjs`：模拟单连接限速 CDN 量测加速比

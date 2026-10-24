@@ -17,9 +17,8 @@
 
 ***
 
-`dsh-chunk-download` 是 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的宿主插件，把 **HTTP Range 分片下载** 做成 Agent 可直接调用的工具：
-下大文件时不再用 `curl`/`wget` 单连接硬啃，而是按 Range 切片、多连接并行拉取，并支持断点续传、暂停/恢复、全局限速，
-下完还能一键把文件送进手机 `Download/DeepSeekHarness`。
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 插件：把 **HTTP Range 分片下载** 做成 Agent 可直接调用的工具 ——
+多连接并发、断点续传、暂停/恢复、限速，比 `curl` 单连接快数倍；**Linux / macOS / Windows 通用**，Android 上还能一键送进 `Download/DeepSeekHarness`。
 
 > 单连接已经跑满带宽时并行不会更快 —— 加速收益来自**服务端对单连接限速**的场景（网盘直链、部分 CDN、GitHub Releases 等），
 > 这在实测里通常就是数倍差距。
@@ -39,6 +38,7 @@
 | 📊 | **实时进度** | 进度条 / 速度 / ETA / 分片完成数 / 队列汇总 |
 | 📱 | **送进手机 Download** | 完成后通过 DSH 设备桥导出到 `Download/DeepSeekHarness` |
 | 🔁 | **同链接去重** | 同一 URL + 同一目标文件已有任务时直接复用，不重复下载 |
+| 🖥 | **跨平台** | Linux / macOS / Windows，Node ≥20；纯 Node 实现，无原生依赖 |
 | 🧩 | **零依赖** | 只用 Node 内置模块，不需要 `npm install` 任何东西 |
 
 ## 为什么快
@@ -77,9 +77,19 @@ chunk-download   ──┬── 1/8 ──┬── 2/8 ──┬── 3/8 ─
 ```bash
 git clone https://github.com/<your-name>/dsh-chunk-download.git
 cd dsh-chunk-download
-node --test                # 15 个用例，全部用本地 HTTP 服务器，无需外网
+node --test                # 16 个用例，全部用本地 HTTP 服务器，无需外网
 node bench/speedup.mjs 2   # 加速比演示
 ```
+
+## 跨平台
+
+| 平台 | 下载 | 导出到手机 |
+| --- | --- | --- |
+| Linux / macOS / Windows | ✅ 纯 Node，路径用 `path` 处理；Windows 覆盖同名文件前会先删目标 | —（无设备桥，自动跳过） |
+| Android（DEEPSEEK_HARNESS） | ✅ | ✅ 走 3090 设备桥，落 `Download/DeepSeekHarness` |
+
+桌面端没有设备桥时，`export: true` 会被跳过并在任务里记 `exportError`（"已跳过导出；文件已保存在本地"），**下载不受影响**。
+CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测试。
 
 ## 用法
 
@@ -156,7 +166,7 @@ node bench/speedup.mjs 2   # 加速比演示
 | `connections` | `8` | 单任务默认并发连接数（1~64） |
 | `maxConcurrentTasks` | `2` | 同时运行的任务数，其余排队 |
 | `speedLimit` | `0` | 全局限速（字节/秒），0 = 不限 |
-| `exportToPhone` | `false` | `true` 时所有任务完成后自动导出到手机 |
+| `exportToPhone` | `false` | `true` 时所有任务完成后自动导出到手机（桌面端自动跳过） |
 | `autoResume` | `true` | 进程重启后自动续传未完成任务 |
 | `retries` | `4` | 单分片重试次数 |
 | `requestTimeoutMs` | `20000` | 探测 / 建连超时 |

@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "分片高速下载",
-    "description": "Range 分片并发 + 断点续传：agent 下大文件时比 curl 单连接快数倍，支持暂停/恢复/限速，完成后可直接送进手机 Download。"
+    "description": "Range 分片并发 + 断点续传：Agent 下大文件比 curl 快数倍，支持暂停/恢复、限速、任务队列，Linux/macOS/Windows 通用。"
   }
 }

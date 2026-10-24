@@ -16,9 +16,9 @@
 
 ***
 
-A host plugin for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) that turns chunked Range downloading into
-tools an agent can call: N parallel connections, resumable chunks, pause/resume, global rate limiting, and a one-shot
-export into the phone's `Download` folder.
+A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) plugin that turns chunked Range downloading into agent
+tools: N parallel connections, resumable chunks, pause/resume, rate limiting — several times faster than a single `curl`
+connection. Runs on **Linux / macOS / Windows**; on Android it can also drop the file into `Download/DeepSeekHarness`.
 
 > Parallelism does not help when a single connection already saturates the link. The win comes from servers that throttle
 > per connection (cloud-drive direct links, some CDNs, GitHub Releases) — there it is routinely several times faster.
@@ -38,6 +38,7 @@ export into the phone's `Download` folder.
 | 📊 | Live progress | progress bar, speed, ETA, chunk counts |
 | 📱 | Export to phone | copies the finished file into `Download/DeepSeekHarness` through the DSH device bridge |
 | 🔁 | Dedupe | the same URL + target reuses the existing task |
+| 🖥 | Cross-platform | Linux / macOS / Windows, Node ≥ 20, no native deps |
 | 🧩 | Zero dependencies | Node built-ins only |
 
 ## Install
@@ -52,6 +53,16 @@ tar czf dsh-chunk-download-0.1.0.tgz -C /tmp/tarpkg package
 ```
 
 The plugin also injects a short system-prompt section telling the agent to prefer `chunk_download` over `curl` for files.
+
+## Cross-platform
+
+| Platform | Download | Export to phone |
+| --- | --- | --- |
+| Linux / macOS / Windows | ✅ pure Node (`path`-based, Windows removes an existing target before rename) | — (no device bridge, skipped) |
+| Android (DEEPSEEK_HARNESS) | ✅ | ✅ via the 3090 bridge into `Download/DeepSeekHarness` |
+
+Without a device bridge, `export: true` is skipped and recorded as `exportError`; **the download itself is unaffected**.
+CI runs the same tests on Ubuntu (Node 20/22/24), macOS (22) and Windows (22).
 
 ## Usage
 
@@ -104,7 +115,7 @@ Direct links often require identifying headers:
 ```bash
 git clone https://github.com/<your-name>/dsh-chunk-download.git
 cd dsh-chunk-download
-node --test                 # 15 tests, local HTTP servers only
+node --test                 # 16 tests, local HTTP servers only
 node bench/speedup.mjs 2    # speed-up demo
 ```
 

@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Chunked Downloader",
-    "description": "Parallel HTTP Range downloads with resume: several times faster than single-connection curl for large files, with pause/resume, rate limit and one-tap export to the phone's Download folder."
+    "description": "Parallel HTTP Range downloads with resume: several times faster than curl, with pause/resume, rate limit and a queue. Linux, macOS and Windows."
   }
 }
