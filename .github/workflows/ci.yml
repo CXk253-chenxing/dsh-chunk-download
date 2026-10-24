@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: 语法检查
+        run: |
+          node --check index.js
+          node --check lib/engine.js
+          node --check lib/format.js
+
+      - name: 跑测试（全部使用本地 HTTP 服务器）
+        run: node --test
+
+      - name: 加速比演示
+        run: node bench/speedup.mjs 1

@@ -1,0 +1,16 @@
+# chunk-download（分片下载）bundle patch
+# 注册宿主插件：给 agent 提供 chunk_download / status / control / wait 四个工具。
+- insert:
+    - id: chunk-download
+      name: 'dsh-chunk-download'
+      config:
+        # 单任务默认并发连接数（1~64；CDN 限 IP 连接数时调低）
+        connections: 8
+        # 同时最多跑几个任务，其余排队
+        maxConcurrentTasks: 2
+        # 全局限速（字节/秒），0 = 不限
+        speedLimit: 0
+        # true = 下载完成后自动导出到手机 Download/DeepSeekHarness
+        exportToPhone: false
+        # 重启后自动续传上次没下完的任务
+        autoResume: true
