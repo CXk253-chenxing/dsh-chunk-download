@@ -86,6 +86,7 @@ CI runs the same tests on Ubuntu (Node 20/22/24), macOS (22) and Windows (22).
 
 | Where | What |
 | --- | --- |
+| Full-width strip above the composer (phone + desktop) | file name, progress bar, percent, speed, pause/cancel — tap to open the panel (main entry on phones) |
 | Session title bar (phone + desktop) | progress pill: ring + percent + live speed, `N tasks` when several |
 | Desktop sidebar footer | `Download · N tasks` with a mini progress bar |
 | Click either | floating panel / mobile bottom sheet: task list, speed, ETA, pause / resume / cancel, pause-all, clear-finished |

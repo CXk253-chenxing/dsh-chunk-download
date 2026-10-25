@@ -212,9 +212,28 @@ window.__ModuleLoader__.load({
 .cdl-bar > i { position: absolute; inset: 0 auto 0 0; border-radius: 2px; background: var(--cdl-accent, var(--dsw-alias-brand-primary)); transition: width 180ms ease-out; }
 @media (prefers-reduced-motion: reduce) { .cdl-bar > i { transition: none; } }
 
+/* ---- 输入框上方的下载条（手机/桌面通用） ---- */
+.cdl-dock {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 6px 8px; border-radius: 10px;
+  background: var(--dsw-alias-bg-layer-2); border: 1px solid var(--dsw-alias-border-l1);
+}
+.cdl-dock-main {
+  display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0;
+  border: 0; background: transparent; color: var(--dsw-alias-label-primary);
+  font-size: 12px; cursor: pointer; padding: 2px 0; text-align: left;
+}
+.cdl-dock-main:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 2px; border-radius: 6px; }
+.cdl-dock-name { max-width: 34%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cdl-dock-bar { position: relative; flex: 1 1 auto; height: 4px; border-radius: 2px; background: var(--dsw-alias-border-l1); overflow: hidden; }
+.cdl-dock-bar > i { position: absolute; inset: 0 auto 0 0; border-radius: 2px; transition: width 180ms ease-out; }
+.cdl-dock-meta { flex: none; color: var(--dsw-alias-label-secondary); font-variant-numeric: tabular-nums; }
+.cdl-dock-actions { display: flex; gap: 2px; flex: none; }
+@media (max-width: 520px) { .cdl-dock-name { display: none; } }
+
 /* ---- 浮动面板 ---- */
 .cdl-panel {
-  position: fixed; z-index: 80; left: 12px; bottom: 76px;
+  position: fixed; z-index: 80; right: 16px; bottom: 92px; left: auto;
   width: min(380px, calc(100vw - 24px)); max-height: min(70vh, 560px);
   display: flex; flex-direction: column; overflow: hidden;
   background: var(--dsw-alias-bg-overlay); border: 1px solid var(--dsw-alias-border-l2);
@@ -401,6 +420,42 @@ window.__ModuleLoader__.load({
       return h(React.Fragment, null, row, ownsPanel ? h(Panel, null) : null)
     }
 
+    /** 输入框上方的整条下载进度（手机/桌面都在，解决"手机看不到侧边栏"）。 */
+    function DockBar() {
+      usePolling()
+      const s = useStore()
+      const tasks = s.data && Array.isArray(s.data.tasks) ? s.data.tasks : []
+      const unfinished = tasks.filter((t) => ACTIVE[t.status])
+      if (unfinished.length === 0) return null
+      const task = currentTask(s.data) || unfinished[0]
+      const ratio = ratioOf(task)
+      const accent = accentOf(task.status)
+      const running = task.status === 'downloading'
+      const meta = running && task.speed
+        ? `${pctText(task)} · ${fmtSpeed(task.speed)}`
+        : `${pctText(task)} · ${STATUS_TEXT[task.status] || task.status}`
+      const bar = h('div', { className: 'cdl-scope cdl-dock' },
+        h('button', {
+          type: 'button',
+          className: 'cdl-dock-main',
+          onClick: () => store.set({ open: !store.get().open, panelHost: 'dock' }),
+          'aria-label': `下载中 ${unfinished.length} 个任务，打开面板`,
+        },
+          h(IconDownload, { size: 15 }),
+          h('span', { className: 'cdl-dock-name' }, task.filename || task.url),
+          h('span', { className: 'cdl-dock-bar' }, h('i', { style: { width: `${ratio * 100}%`, background: accent } })),
+          h('span', { className: 'cdl-dock-meta' }, meta)),
+        h('div', { className: 'cdl-dock-actions' },
+          running
+            ? h('button', { type: 'button', className: 'cdl-iconbtn', title: '暂停', 'aria-label': '暂停', onClick: () => control('pause', task.id) }, h(IconPause, { size: 13 }))
+            : (task.status === 'paused' || task.status === 'failed')
+              ? h('button', { type: 'button', className: 'cdl-iconbtn', title: '继续', 'aria-label': '继续', onClick: () => control('resume', task.id) }, h(IconPlay, { size: 13 }))
+              : null,
+          h('button', { type: 'button', className: 'cdl-iconbtn', title: '取消', 'aria-label': '取消', onClick: () => control('cancel', task.id) }, h(IconClose, { size: 13 }))))
+      const ownsPanel = s.open && s.panelHost === 'dock'
+      return h(React.Fragment, null, bar, ownsPanel ? h(Panel, null) : null)
+    }
+
     function TaskItem(props) {
       const task = props.task
       const ratio = ratioOf(task)
@@ -428,6 +483,9 @@ window.__ModuleLoader__.load({
               : (task.status === 'paused' || task.status === 'failed')
                 ? h('button', { type: 'button', className: 'cdl-iconbtn', title: '继续', 'aria-label': '继续', onClick: () => control('resume', task.id) }, h(IconPlay, { size: 14 }))
                 : null,
+            task.status === 'completed' && !task.exportedPath
+              ? h('button', { type: 'button', className: 'cdl-iconbtn', title: '导出到手机 Download', 'aria-label': '导出到手机', onClick: () => control('export', task.id) }, h(IconDownload, { size: 13 }))
+              : null,
             (task.status === 'downloading' || task.status === 'queued' || task.status === 'paused')
               ? h('button', { type: 'button', className: 'cdl-iconbtn', title: '取消', 'aria-label': '取消', onClick: () => control('cancel', task.id) }, h(IconClose, { size: 14 }))
               : null)),
@@ -483,6 +541,12 @@ window.__ModuleLoader__.load({
       slots.inject('conversation.session.header.utilities', () => slots.register(
         { name: 'conversation.session.header.utilities', id: 'chunk-download', order: 6, label: '下载进度' },
         () => h(HeaderChip, null),
+      ))
+
+      // 输入框上方：整条下载进度（手机 / 桌面都有）
+      slots.inject('conversation.input.dock', () => slots.register(
+        { name: 'conversation.input.dock', id: 'chunk-download', order: 30, label: '下载进度' },
+        () => h(DockBar, null),
       ))
 
       // 桌面：侧边栏底部一行任务摘要

@@ -72,6 +72,11 @@ test('UI 渲染：标题栏胶囊 / 侧边栏行 / 面板', { skip: React === nu
   assert.match(chip, /45\.6%/, '胶囊应显示百分比')
   assert.match(chip, /MB\/s/, '胶囊应显示速度')
 
+  const dock = render('conversation.input.dock')
+  assert.ok(dock.includes('cdl-dock'), '输入框上方应有下载条')
+  assert.match(dock, /45\.6%/, '下载条应显示百分比')
+  assert.ok(dock.includes('aria-label="暂停"'), '下载条应能暂停')
+
   const row = render('sidebar.footer.action')
   assert.ok(row.includes('1 个任务'), '侧边栏行应显示活动任务数')
   assert.match(row, /role="progressbar"|cdl-bar/, '侧边栏行应有进度条')
