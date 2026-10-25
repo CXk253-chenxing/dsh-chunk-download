@@ -169,9 +169,13 @@ node bench/speedup.mjs 2    # speed-up demo
 | [dsh-downloader](https://github.com/having5548/dsh-downloader) | download proxy with its own nodes | the route is blocked |
 | **this project** | pure Node, 1–64 connections, phone export + notifications | phone / ARM / no binaries |
 
-## Credits & License
+## License & Credits
 
-Chunk planning and validation rules were inspired by the Android downloader kernel of
-[YunX](https://github.com/CYQawa/YunX) (Kotlin). This repository is an independent Node reimplementation.
+Licensed under **AGPL-3.0-or-later**, matching [YunX](https://github.com/CYQawa/YunX), whose download kernel
+(Kotlin, AGPL-3.0) inspired the chunk planning, `Content-Range` validation, single-stream fallback, token-bucket
+rate limiting and sliding-window speed measurement used here.
 
-[MIT](LICENSE) © 2026 &lt;your-name&gt;
+Because the design follows YunX, the same copyleft applies: if you distribute a modified version or run it as a
+network service, you must release your source under AGPL-3.0 as well.
+
+Copyright (C) 2026 CXk253-chenxing — see [LICENSE](LICENSE).

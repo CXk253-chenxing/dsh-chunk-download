@@ -1,4 +1,5 @@
 /**
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  * chunk-download —— DEEPSEEK_HARNESS 分片下载插件（宿主侧）。
  *
  * 目标：给 agent 一条"高速下载通道"。要下安装包 / 模型 / 视频 / 网盘直链时，

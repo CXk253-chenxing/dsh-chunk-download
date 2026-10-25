@@ -9,6 +9,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/CXk253-chenxing/dsh-chunk-download/ci.yml?style=flat-square&label=CI)](.github/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/CXk253-chenxing/dsh-chunk-download?style=flat-square&color=4C8BF5)](https://github.com/CXk253-chenxing/dsh-chunk-download/releases)
 [![License](https://img.shields.io/github/license/CXk253-chenxing/dsh-chunk-download?style=flat-square&color=3DA639)](LICENSE)
+![AGPL](https://img.shields.io/badge/license-AGPL--3.0--or--later-3DA639?style=flat-square)
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?style=flat-square&logo=node.js&logoColor=white)
 
 [功能](#功能) · [为什么快](#为什么快) · [安装](#安装) · [用法](#用法) · [配置](#配置) · [实测](#实测) · [原理](docs/how-it-works.md)
@@ -293,8 +294,9 @@ CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测�
 [YunX（云析）](https://github.com/CYQawa/YunX) 的 Android 下载内核（Kotlin）：片数 = `max(档位, 连接数×8)`、
 单片 ≥256KB、封顶 512 片、`Content-Range` 严格匹配、忽略 Range 时回退单流等。
 
-本仓库是**独立重新实现的 Node 版本**：没有复用其代码，且把「part_N 临时分片 + 合并」换成「直接定位写最终文件」，
-省掉一次全量磁盘合并。感谢原项目的思路启发。
+本仓库是 **Node 版本的重新实现**：把「part_N 临时分片 + 合并」换成「直接定位写最终文件」，省掉一次全量磁盘合并；
+语言、运行时、并发模型都不同。但**实现思路与分片参数来自 YunX**，因此本项目同样以 **AGPL-3.0-or-later** 发布，
+与上游保持一致；二次分发或提供网络服务时请遵守同一协议。感谢原项目的开源。
 
 ## 目录结构
 
@@ -323,6 +325,12 @@ dsh-chunk-download/
 - 服务端不支持 Range 时只能单流（无法续传）；
 - 连接数过高可能撞上 CDN 对单 IP 的连接数限制（429 / 连接重置），此时调低 `connections`。
 
-## License
+## 许可与致谢
 
-[MIT](LICENSE) © 2026 &lt;your-name&gt;
+本项目以 **AGPL-3.0-or-later** 开源，与 [YunX（云析）](https://github.com/CYQawa/YunX) 保持一致。
+
+- 分片规划、`Content-Range` 校验、忽略 Range 时回退、令牌桶限速与滑动窗口测速等**实现思路**参考自 YunX（AGPL-3.0）；
+- 按 AGPL 的要求：**分发修改版、或以其对外提供网络服务时，必须同样以 AGPL-3.0 开放源代码**；
+- 完整文本见 [LICENSE](LICENSE)。
+
+Copyright (C) 2026 CXk253-chenxing

@@ -1,4 +1,5 @@
 /**
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  * 加速效果演示：本地服务器模拟"单连接被限速 256KB/s"的 CDN，
  * 同一个文件分别用 1 连接（≈ curl 单线程）和 8 连接（插件默认）下载，对比耗时。
  *
