@@ -77,7 +77,19 @@ chunk-download   ──┬── 1/8 ──┬── 2/8 ──┬── 3/8 ─
 dsh plugin add dsh-chunk-download
 ```
 
-### 方式二：本地 bundle（现在就能用）
+### 方式二：本地目录 link（当前使用，推荐开发用）
+
+```bash
+DSH_HOME=/root/.dsh dsh plugin --profile web add /root/dsh-chunk-download
+```
+
+装完 `dependencies` 里是 `link:/root/dsh-chunk-download`、`dsh.profile.bundles` 自动带上包名；
+改完源码**重启会话**即生效，不用重打包。
+
+> **来源形式**：本地目录 `link:`（与 `dsh-image-gen` 等社区插件的安装形态一致）。
+> 升级只需 `git pull`（或改文件）后重启；要分发时再用下面的 tgz。
+
+### 方式三：本地 bundle 包（tgz，适合分发）
 
 1. 打成 npm 风格 tgz（`package/` 前缀）：
 
