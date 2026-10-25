@@ -4,7 +4,7 @@
 
 # dsh-chunk-download
 
-**A multi-connection HTTP Range downloader for AI agents — resume, rate limit, several times faster than single-connection `curl`.**
+**A downloader for agents on your phone: parallel Range chunks, resume, and files that land straight in the phone's Download folder.**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/CXk253-chenxing/dsh-chunk-download/ci.yml?style=flat-square&label=CI)](.github/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/CXk253-chenxing/dsh-chunk-download?style=flat-square&color=3DA639)](LICENSE)
@@ -47,6 +47,14 @@ connection. Runs on **Linux / macOS / Windows**; on Android it can also drop the
 | 📊 | Live UI | session-header chip, sidebar row and a floating task panel |
 | 🧩 | Zero dependencies | Node built-ins only |
 
+## Who is it for
+
+- You ask the agent on your phone to fetch an installer / model / video / cloud-drive direct link and want it in `Download`.
+- The server throttles **per connection** (cloud-drive links, some CDNs, GitHub Releases) — parallel connections help.
+- You don't want to install aria2 or curl binaries (macOS, ARM servers, phone containers).
+
+It is *not* for HLS/magnet/BT, nor for single connections that already saturate the link (parallelism then equals a single thread).
+
 ## Install
 
 Build an npm-style tarball (`package/` prefix), install it from the DEEPSEEK_HARNESS plugin manager, enable
@@ -71,6 +79,10 @@ Without a device bridge, `export: true` is skipped and recorded as `exportError`
 CI runs the same tests on Ubuntu (Node 20/22/24), macOS (22) and Windows (22).
 
 ## UI
+
+![UI mock](assets/ui-mock.svg)
+
+> Design mock, not a screenshot.
 
 | Where | What |
 | --- | --- |
@@ -147,6 +159,15 @@ node bench/speedup.mjs 2    # speed-up demo
 - Direct links only — no cloud-drive share-link parsing, no HLS/DASH/magnet;
 - servers without Range support can only be downloaded single-stream (no resume);
 - very high connection counts may hit per-IP limits (429 / resets) — lower `connections`.
+
+## Related plugins
+
+| Project | Character | Pick it when |
+| --- | --- | --- |
+| [@leisureyu/dsh-smart-dl](https://github.com/LeiSureYu/dsh-smart-download) | bundles aria2, checksums, batch, panel | you want the mature aria2 engine on desktop |
+| [dlx-downloader](https://github.com/zhanghuqqqq/dlx-downloader) | chunked curl engine, panel, mirror failover | you need mirror retries |
+| [dsh-downloader](https://github.com/having5548/dsh-downloader) | download proxy with its own nodes | the route is blocked |
+| **this project** | pure Node, 1–64 connections, phone export + notifications | phone / ARM / no binaries |
 
 ## Credits & License
 

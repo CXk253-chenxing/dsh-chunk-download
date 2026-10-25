@@ -2,6 +2,18 @@
 
 版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；本项目处于 `0.x`，接口仍可能调整。
 
+## [0.2.1] - 2026-10-25
+
+分发与文档版本，无代码改动。
+
+### 变更
+
+- README 改为「手机端下载助手」开场，新增**适合谁**、**同类项目**、**界面示意**
+- 新增 [assets/ui-mock.svg](assets/ui-mock.svg)（界面示意，非截图）
+- 新增 [docs/publishing.md](docs/publishing.md)：npm 发布、awesome-dsh-plugin 目录 PR、GitHub Release 流程
+- 新增 [docs/catalog-entry.yml](docs/catalog-entry.yml)：可直接提交的目录条目
+- 基准数据保持 2026-10-25 实测，不再复测（作者处于限速网络）
+
 ## [0.2.0] - 2026-10-25
 
 ### 新增

@@ -1,6 +1,6 @@
 {
   "name": "dsh-chunk-download",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Range 分片并发 + 断点续传的下载插件：给 AI Agent 一条比 curl 单连接快数倍的高速下载通道，跨平台",
   "author": "CXk253-chenxing",
@@ -17,11 +17,13 @@
     "client.js",
     "lib/*.js",
     "locale/*.json",
-    "docs/*.md",
     "icon.svg",
     "README.md",
     "README.en.md",
-    "LICENSE"
+    "LICENSE",
+    "docs/*.md",
+    "docs/*.yml",
+    "assets/*.svg"
   ],
   "icon": "./icon.svg",
   "keywords": [
@@ -44,7 +46,8 @@
     "test": "node --test",
     "bench": "node bench/speedup.mjs 2",
     "check": "node --check index.js && node --check lib/engine.js && node --check lib/format.js",
-    "pack:plugin": "rm -rf /tmp/tarpkg && mkdir -p /tmp/tarpkg && cp -a . /tmp/tarpkg/package && rm -rf /tmp/tarpkg/package/.git && tar czf dsh-chunk-download-${npm_package_version}.tgz -C /tmp/tarpkg package"
+    "pack:plugin": "rm -rf /tmp/tarpkg && mkdir -p /tmp/tarpkg && cp -a . /tmp/tarpkg/package && rm -rf /tmp/tarpkg/package/.git && tar czf dsh-chunk-download-${npm_package_version}.tgz -C /tmp/tarpkg package",
+    "prepublishOnly": "npm test"
   },
   "repository": {
     "type": "git",

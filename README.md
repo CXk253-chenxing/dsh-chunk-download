@@ -4,7 +4,7 @@
 
 # 分片高速下载 · dsh-chunk-download
 
-**给 AI Agent 用的多线程下载器：Range 分片并发 + 断点续传 + 限速，比 `curl` 单连接快数倍**
+**手机上的 Agent 下载助手：多连接分片、断了能续、下完直接进「下载」目录**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/CXk253-chenxing/dsh-chunk-download/ci.yml?style=flat-square&label=CI)](.github/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/CXk253-chenxing/dsh-chunk-download?style=flat-square&color=4C8BF5)](https://github.com/CXk253-chenxing/dsh-chunk-download/releases)
@@ -17,12 +17,20 @@
 
 ***
 
-[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 插件：把 **HTTP Range 分片下载** 做成 Agent 可直接调用的工具 ——
-多连接并发、断点续传、暂停/恢复、限速、摘要校验，比 `curl` 单连接快数倍；**Linux / macOS / Windows 通用**，
-Android 上还能一键送进 `Download/DeepSeekHarness`。桌面侧边栏与会话标题栏都有实时进度。
+在手机上的 DEEPSEEK_HARNESS 里让 Agent 下大文件：**Range 分片并发 + 断点续传**，断了接着下，
+下完直接落在 `Download/DeepSeekHarness`；桌面端有侧边栏进度与会话标题栏胶囊。
+纯 Node 实现，**不用装 aria2 / curl 二进制**。
 
-> 单连接已经跑满带宽时并行不会更快 —— 加速收益来自**服务端对单连接限速**的场景（网盘直链、部分 CDN、GitHub Releases 等），
-> 这在实测里通常就是数倍差距。
+## 适合谁
+
+| | 情况 | 说明 |
+| --- | --- | --- |
+| ✅ | 手机上让 Agent 下安装包 / 模型 / 视频 / 网盘直链 | 下完一键进「下载」，推送通知栏 |
+| ✅ | 服务端**对单连接限速**（网盘直链、部分 CDN、GitHub Releases） | 多连接聚合，实测约 ×2.4 |
+| ✅ | 不想装 aria2 / curl 二进制（macOS、ARM 服务器、手机容器） | 纯 Node，无原生依赖 |
+| ❌ | HLS(m3u8) / 磁力 / BT | 不支持 |
+| ❌ | 单连接已经跑满带宽 | 并行不会更快，与单线程持平（见[实测](#实测)） |
+| ❌ | 想要网盘分享链接解析 | 那是另一类插件，需要各平台登录态 |
 
 ## 功能
 
@@ -63,18 +71,24 @@ chunk-download   ──┬── 1/8 ──┬── 2/8 ──┬── 3/8 ─
 
 ## 安装
 
-### 作为 DSH 插件（推荐）
+### 方式一：npm（发布后）
+
+```bash
+dsh plugin add dsh-chunk-download
+```
+
+### 方式二：本地 bundle（现在就能用）
 
 1. 打成 npm 风格 tgz（`package/` 前缀）：
 
    ```bash
-   rm -rf /tmp/tarpkg && mkdir -p /tmp/tarpkg
-   cp -a dsh-chunk-download /tmp/tarpkg/package
-   tar czf dsh-chunk-download-0.1.0.tgz -C /tmp/tarpkg package
+   npm run pack:plugin      # 生成 dsh-chunk-download-$(version).tgz
    ```
 
 2. 在 DEEPSEEK_HARNESS 的**插件管理**里安装这个 tgz，启用 `chunk-download`，然后开新会话。
 3. 工具列表里出现 `chunk_download` / `chunk_download_status` / `chunk_download_control` / `chunk_download_wait` 即成功。
+
+分发流程（npm 发布 / 插件目录 PR / Release）见 [docs/publishing.md](docs/publishing.md)。
 
 > 插件会往系统提示词注入一段“下载文件优先用 `chunk_download`”，让 Agent 自动走这条路而不是 `curl`。
 
@@ -100,7 +114,11 @@ CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测�
 
 ## 界面
 
-装好后 DSH Web GUI 里会多出两处「安静但看得见」的进度，不用打开设置：
+![界面示意](assets/ui-mock.svg)
+
+> 示意图，不是截图；深色主题下取色，浅色主题自动跟随 DSH 令牌。
+
+装好后 DSH Web GUI 里会多出三处「安静但看得见」的进度，不用打开设置：
 
 | 位置 | 表现 |
 | --- | --- |
@@ -215,7 +233,8 @@ CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测�
 
 ## 实测
 
-> 2026-10-25 复测，家庭宽带 + 境内 CDN，同一文件、同一时段逐项对比。
+> 2026-10-25 实测，家庭宽带 + 境内 CDN，同一文件、同一时段逐项对比。
+> 之后没有复测（作者换了限速流量卡，再测没有参考价值）——把这张表当**历史数据**，不要当承诺。
 
 | 场景 | 单连接 | 本插件 | 差距 |
 | --- | --- | --- | --- |
@@ -245,6 +264,17 @@ CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测�
 5. 已完成分片索引 + 计划签名落盘，续传时跳过已完成片；
 6. 服务端返回 200 或响应被压缩 ⇒ 放弃分片，回退单流。
 
+## 同类项目
+
+同类插件已经存在，按需选择：
+
+| 项目 | 特点 | 什么时候选它 |
+| --- | --- | --- |
+| [@leisureyu/dsh-smart-dl](https://github.com/LeiSureYu/dsh-smart-download) | 内置 aria2，校验 / 批量 / 磁盘预检 / 进度面板，下载量最大 | 桌面端，想直接复用 aria2 引擎 |
+| [dlx-downloader](https://github.com/zhanghuqqqq/dlx-downloader) | 分片 curl 引擎 + 侧栏面板 + 镜像故障转移 | 需要镜像自动重试 |
+| [dsh-downloader](https://github.com/having5548/dsh-downloader) | 下载代理（自带节点），解决「连不上」 | 境外链路被墙 |
+| **本项目** | 纯 Node 无二进制、1–64 连接、手机导出 + 通知、严格校验 | 手机端 / ARM / 不想装外部依赖 |
+
 ## 与 YunX 的关系
 
 分片策略、校验规则、限速与测速思路参考了开源项目
@@ -260,12 +290,15 @@ CI 在 Ubuntu × Node 20/22/24、macOS × 22、Windows × 22 上跑同一套测�
 dsh-chunk-download/
 ├── index.js                 # 插件入口：注册 4 个工具 + 系统提示 + 进度接口
 ├── client.js                # 浏览器半身：侧边栏 / 标题栏 / 浮动面板
+├── assets/ui-mock.svg       # 界面示意图（README 用）
 ├── lib/engine.js            # 下载内核（探测/分片/并发/续传/限速/队列/持久化）
 ├── lib/format.js            # 进度条与人类可读文案
 ├── cordis.patch.yml         # 插件层挂载配置
 ├── locale/{zh,en}.json      # 插件管理里显示的名称与简介
 ├── icon.svg
 ├── docs/how-it-works.md     # 原理、分片规划、协议校验细节
+├── docs/publishing.md       # npm 发布 / 插件目录 PR / Release 流程
+├── docs/catalog-entry.yml   # awesome-dsh-plugin 目录条目（可直接提 PR）
 ├── test/                    # node --test：引擎 + 插件层端到端
 ├── bench/speedup.mjs        # 加速比演示
 └── .github/workflows/ci.yml # CI：node 20 / 22 / 24 跑测试

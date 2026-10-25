@@ -1,0 +1,13 @@
+url: https://github.com/CXk253-chenxing/dsh-chunk-download
+name: CXk253-chenxing/dsh-chunk-download
+category: tools
+description:
+  en: >-
+    Range-chunked downloader for DeepSeek Harness: 1-64 parallel connections, resume, SHA-256 checks,
+    if-exists policy, disk preflight and batch URLs. The Web UI shows a session-header progress chip, a
+    sidebar row and a task panel; finished files can be exported to the phone's Download folder. Pure
+    Node, no aria2/curl binary, Linux/macOS/Windows.
+  zh: >-
+    分片下载插件：1~64 连接并发、断点续传、SHA-256 校验、同名策略、磁盘预检与批量下载；Web 界面有
+    会话标题栏进度胶囊、侧边栏任务行与浮动面板，完成后可送进手机 Download。纯 Node 实现，不依赖
+    aria2/curl 二进制，Linux/macOS/Windows 通用。

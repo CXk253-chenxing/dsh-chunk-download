@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-label="dsh-chunk-download 界面示意">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B0E14"/>
+      <stop offset="1" stop-color="#10151F"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+    <style>
+      .t { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif; fill: #E6EBF2; }
+      .s { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif; fill: #93A0B4; }
+      .num { font-variant-numeric: tabular-nums; }
+      .card { fill: #151A23; stroke: #2A3240; stroke-width: 1; }
+      .chip { fill: #1B212C; stroke: #2A3240; stroke-width: 1; }
+      .track { fill: #2A3240; }
+      .fill { fill: #4C8BF5; }
+      .ok { fill: #3FB950; }
+      .warn { fill: #D29922; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="720" fill="url(#bg)"/>
+
+  <!-- 标题 -->
+  <text x="60" y="72" class="t" font-size="26" font-weight="700">dsh-chunk-download</text>
+  <text x="60" y="102" class="s" font-size="15">界面示意 · 非截图（深色主题；浅色主题自动跟随 DSH 令牌）</text>
+
+  <!-- ① 会话标题栏 -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="140" width="1080" height="72" rx="14" class="card"/>
+    <text x="88" y="184" class="s" font-size="14">会话标题栏（手机 + 桌面）</text>
+    <text x="470" y="184" class="t" font-size="14" font-weight="600">会话 · 分片下载插件</text>
+
+    <!-- 进度胶囊 -->
+    <rect x="900" y="160" width="212" height="34" rx="17" class="chip"/>
+    <circle cx="924" cy="177" r="8" fill="none" stroke="#2A3240" stroke-width="3"/>
+    <circle cx="924" cy="177" r="8" fill="none" stroke="#4C8BF5" stroke-width="3"
+            stroke-linecap="round" stroke-dasharray="50.3" stroke-dashoffset="22.6"
+            transform="rotate(-90 924 177)"/>
+    <text x="942" y="182" class="t num" font-size="14" font-weight="600">45.7%</text>
+    <text x="1004" y="182" class="s num" font-size="13">3.4 MB/s</text>
+  </g>
+
+  <!-- ② 侧边栏行 -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="248" width="360" height="96" rx="14" class="card"/>
+    <text x="84" y="278" class="s" font-size="13">桌面侧边栏底部</text>
+    <!-- 行 -->
+    <rect x="80" y="292" width="320" height="36" rx="8" fill="#1B212C"/>
+    <path d="M100 301v9" stroke="#93A0B4" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+    <path d="M95.5 306.5l4.5 4.5 4.5-4.5" stroke="#93A0B4" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M94 315h12" stroke="#93A0B4" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+    <text x="112" y="315" class="t" font-size="13">下载 · 2 个任务</text>
+    <rect x="238" y="307" width="56" height="4" rx="2" class="track"/>
+    <rect x="238" y="307" width="26" height="4" rx="2" class="fill"/>
+    <text x="306" y="315" class="s num" font-size="12">45.7%</text>
+  </g>
+
+  <!-- ③ 浮动面板 -->
+  <g filter="url(#shadow)">
+    <rect x="470" y="248" width="670" height="392" rx="16" class="card"/>
+
+    <!-- 头部 -->
+    <g>
+      <path d="M506 276v10" stroke="#E6EBF2" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+      <path d="M501.5 281.5l4.5 4.5 4.5-4.5" stroke="#E6EBF2" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M500 291h12" stroke="#E6EBF2" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+      <text x="518" y="287" class="t" font-size="15" font-weight="600">下载</text>
+      <text x="556" y="287" class="s num" font-size="13">2</text>
+      <text x="960" y="287" class="s" font-size="13">全部暂停</text>
+      <text x="1040" y="287" class="s" font-size="13">清理已完成</text>
+      <line x1="470" y1="306" x2="1140" y2="306" stroke="#2A3240"/>
+    </g>
+
+    <!-- 任务 1：下载中 -->
+    <g>
+      <circle cx="502" cy="342" r="4" class="fill"/>
+      <text x="516" y="347" class="t" font-size="14">node-v22.0.0-linux-x64.tar.gz</text>
+      <circle cx="1074" cy="342" r="13" fill="none" stroke="#2A3240"/>
+      <path d="M1071 337v10 M1077 337v10" stroke="#93A0B4" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="1108" cy="342" r="13" fill="none" stroke="#2A3240"/>
+      <path d="M1104 338l8 8 M1112 338l-8 8" stroke="#93A0B4" stroke-width="1.6" stroke-linecap="round"/>
+
+      <text x="502" y="374" class="s num" font-size="12">45.7%</text>
+      <text x="550" y="374" class="s num" font-size="12">· 20.5 MB / 44.98 MB</text>
+      <text x="742" y="374" class="s num" font-size="12">· 3.4 MB/s</text>
+      <text x="830" y="374" class="s num" font-size="12">· 剩余 7s</text>
+
+      <rect x="502" y="388" width="618" height="5" rx="2.5" class="track"/>
+      <rect x="502" y="388" width="282" height="5" rx="2.5" class="fill"/>
+    </g>
+
+    <!-- 任务 2：已完成 -->
+    <g>
+      <circle cx="502" cy="440" r="4" class="ok"/>
+      <text x="516" y="445" class="t" font-size="14">SHASUMS256.txt</text>
+      <circle cx="1108" cy="440" r="13" fill="none" stroke="#2A3240"/>
+      <path d="M1104 436l8 8 M1112 436l-8 8" stroke="#93A0B4" stroke-width="1.6" stroke-linecap="round"/>
+
+      <text x="502" y="472" class="s num" font-size="12">100%</text>
+      <text x="546" y="472" class="s num" font-size="12">· 3.7 KB / 3.7 KB</text>
+      <text x="700" y="472" class="ok" font-size="12">· 校验通过</text>
+
+      <rect x="502" y="486" width="618" height="5" rx="2.5" class="track"/>
+      <rect x="502" y="486" width="618" height="5" rx="2.5" class="ok"/>
+    </g>
+
+    <!-- 任务 3：已暂停 -->
+    <g>
+      <circle cx="502" cy="538" r="4" class="warn"/>
+      <text x="516" y="543" class="t" font-size="14">ubuntu-24.04.iso</text>
+      <circle cx="1074" cy="538" r="13" fill="none" stroke="#2A3240"/>
+      <path d="M1071 533.5l8.5 4.5-8.5 4.5z" fill="#93A0B4"/>
+      <circle cx="1108" cy="538" r="13" fill="none" stroke="#2A3240"/>
+      <path d="M1104 534l8 8 M1112 534l-8 8" stroke="#93A0B4" stroke-width="1.6" stroke-linecap="round"/>
+
+      <text x="502" y="570" class="s num" font-size="12">62.0%</text>
+      <text x="550" y="570" class="s num" font-size="12">· 1.2 GB / 1.9 GB · 已暂停</text>
+
+      <rect x="502" y="584" width="618" height="5" rx="2.5" class="track"/>
+      <rect x="502" y="584" width="383" height="5" rx="2.5" class="warn"/>
+    </g>
+  </g>
+
+  <!-- 底部说明 -->
+  <text x="60" y="690" class="s" font-size="13">所有颜色取自 DSH 主题令牌（brand / success / warn / border-l1…），明暗主题自动适配；图标为内联 SVG。</text>
+</svg>
