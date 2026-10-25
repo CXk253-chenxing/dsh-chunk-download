@@ -59,6 +59,7 @@ test('UI 渲染：标题栏胶囊 / 侧边栏行 / 面板', { skip: React === nu
       ],
     },
     open: true,
+    panelHost: 'header',
   })
 
   const render = (name) => {
@@ -75,7 +76,7 @@ test('UI 渲染：标题栏胶囊 / 侧边栏行 / 面板', { skip: React === nu
   assert.ok(row.includes('1 个任务'), '侧边栏行应显示活动任务数')
   assert.match(row, /role="progressbar"|cdl-bar/, '侧边栏行应有进度条')
 
-  const panel = render('shell.overlay')
+  const panel = render('conversation.session.header.utilities')
   assert.ok(panel.includes('node-v22.tar.gz'), '面板应列出任务文件名')
   assert.ok(panel.includes('role="progressbar"'), '面板每行应有进度条')
   assert.ok(panel.includes('aria-label="暂停"'), '下载中的任务应有暂停按钮')

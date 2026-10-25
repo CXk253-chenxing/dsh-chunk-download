@@ -56,7 +56,11 @@ test('客户端半身：加载格式 + 三个槽位注册', async () => {
 
   assert.deepEqual(
     registrations.map((r) => r.options.name),
-    ['conversation.session.header.utilities', 'sidebar.footer.action', 'shell.overlay'],
+    ['conversation.session.header.utilities', 'sidebar.footer.action'],
+  )
+  assert.ok(
+    !registrations.some((r) => r.options.name === 'shell.overlay'),
+    '不得占用 shell.overlay（会盖住桌宠等悬浮层）',
   )
   for (const reg of registrations) {
     assert.ok(reg.options.id, '每个槽位都要有稳定 id')

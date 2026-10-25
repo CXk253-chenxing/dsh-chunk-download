@@ -1,6 +1,6 @@
 {
   "name": "dsh-chunk-download",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "Range 分片并发 + 断点续传的下载插件：给 AI Agent 一条比 curl 单连接快数倍的高速下载通道，跨平台",
   "author": "CXk253-chenxing",

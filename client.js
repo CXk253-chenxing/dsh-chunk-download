@@ -83,7 +83,7 @@ window.__ModuleLoader__.load({
     // ---------------------------------------------------------------- 状态仓库
 
     function createStore() {
-      let state = { data: null, error: null, open: false }
+      let state = { data: null, error: null, open: false, panelHost: null }
       const listeners = new Set()
       return {
         get: () => state,
@@ -356,18 +356,21 @@ window.__ModuleLoader__.load({
       const task = currentTask(data) || unfinished[0]
       const ratio = ratioOf(task)
       const extra = unfinished.length > 1 ? ` +${unfinished.length - 1}` : ''
-      return h('button', {
+      const chip = h('button', {
         type: 'button',
         className: 'cdl-scope cdl-chip',
         title: `${task.filename} · ${STATUS_TEXT[task.status] || task.status}${extra}`,
         'aria-label': `下载任务 ${unfinished.length} 个，${task.filename} ${pctText(task)}`,
-        onClick: () => store.set({ open: !store.get().open }),
+        onClick: () => store.set({ open: !store.get().open, panelHost: 'header' }),
       },
         h(Ring, { ratio: ratio }),
         h('span', { className: 'cdl-chip-pct' }, unfinished.length > 1 ? `${unfinished.length} 个` : pctText(task)),
         unfinished.length === 1 && task.status === 'downloading'
           ? h('span', { className: 'cdl-chip-speed' }, fmtSpeed(task.speed))
           : null)
+      // 面板挂在自己的子树里（position:fixed），不再占用 shell.overlay（那会盖住桌宠等悬浮层）
+      const ownsPanel = s.open && s.panelHost === 'header'
+      return h(React.Fragment, null, chip, ownsPanel ? h(Panel, null) : null)
     }
 
     /** 桌面侧边栏底部：一行摘要 + 迷你进度条。 */
@@ -382,10 +385,10 @@ window.__ModuleLoader__.load({
       const label = unfinished.length > 0
         ? `下载 · ${unfinished.length} 个任务`
         : `下载 · 已完成 ${s.data.summary.completed || 0}`
-      return h('button', {
+      const row = h('button', {
         type: 'button',
         className: 'cdl-scope cdl-row',
-        onClick: () => store.set({ open: !store.get().open }),
+        onClick: () => store.set({ open: !store.get().open, panelHost: 'sidebar' }),
         'aria-label': '打开下载面板',
       },
         h(IconDownload, { size: 14 }),
@@ -394,6 +397,8 @@ window.__ModuleLoader__.load({
           ? h('span', { className: 'cdl-bar', style: { maxWidth: 56 } }, h('i', { style: { width: `${ratio * 100}%`, background: accentOf(task.status) } }))
           : null,
         h('span', { className: 'cdl-row-meta' }, task ? pctText(task) : ''))
+      const ownsPanel = s.open && s.panelHost === 'sidebar'
+      return h(React.Fragment, null, row, ownsPanel ? h(Panel, null) : null)
     }
 
     function TaskItem(props) {
@@ -467,13 +472,6 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function OverlayHost() {
-      const s = useStore()
-      usePolling()
-      if (!s.open) return null
-      return h(Panel, null)
-    }
-
     // ---------------------------------------------------------------- 注册
 
     function apply(ctx) {
@@ -493,11 +491,6 @@ window.__ModuleLoader__.load({
         () => h(SidebarRow, null),
       ))
 
-      // 任意处点击后弹出的浮动面板 / 手机底部抽屉
-      slots.inject('shell.overlay', () => slots.register(
-        { name: 'shell.overlay', id: 'chunk-download', order: 24 },
-        () => h(OverlayHost, null),
-      ))
     }
 
     exports.apply = apply
