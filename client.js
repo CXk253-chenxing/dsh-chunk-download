@@ -163,6 +163,18 @@ window.__ModuleLoader__.load({
       }, [])
     }
 
+    /** 把客户端状态/错误写回宿主（~/.dsh/chunk-download/ui.log），无控制台时排查用。 */
+    function report(message) {
+      try {
+        fetch('/chunk-download/ui-log', {
+          method: 'POST',
+          headers: { 'content-type': 'text/plain' },
+          body: String(message).slice(0, 4000),
+          keepalive: true,
+        }).catch(function () {})
+      } catch (_) {}
+    }
+
     async function control(action, id) {
       try {
         await fetch(API_CONTROL, {
@@ -535,26 +547,40 @@ window.__ModuleLoader__.load({
     function apply(ctx) {
       const slots = ctx.get('slots')
       if (!slots) return
-      injectStyle()
+      try {
+        injectStyle()
+      } catch (error) {
+        report('injectStyle failed: ' + (error && error.message))
+      }
+      report('apply: start')
 
-      // 手机 + 桌面：会话标题栏右侧的进度胶囊（不遮挡任何宿主 chrome）
-      slots.inject('conversation.session.header.utilities', () => slots.register(
-        { name: 'conversation.session.header.utilities', id: 'chunk-download', order: 6, label: '下载进度' },
-        () => h(HeaderChip, null),
-      ))
+      /** 逐个槽位注册：某个布局里没有这个槽位时只跳过它，不能连累其它入口。 */
+      function mount(slotName, order, label, Component) {
+        try {
+          slots.inject(slotName, function () {
+            try {
+              return slots.register({ name: slotName, id: 'chunk-download', order: order, label: label }, function () {
+                return h(Component, null)
+              })
+            } catch (error) {
+              report('register failed [' + slotName + ']: ' + (error && (error.stack || error.message)))
+              return function () {}
+            }
+          })
+          report('mount ok [' + slotName + ']')
+        } catch (error) {
+          report('inject failed [' + slotName + ']: ' + (error && (error.stack || error.message)))
+        }
+      }
 
       // 输入框上方：整条下载进度（手机 / 桌面都有）
-      slots.inject('conversation.input.dock', () => slots.register(
-        { name: 'conversation.input.dock', id: 'chunk-download', order: 30, label: '下载进度' },
-        () => h(DockBar, null),
-      ))
+      mount('conversation.input.dock', 30, '下载进度', DockBar)
+      // 桌面：侧边栏底部一行任务摘要（手机布局可能没有这个槽位 → 跳过）
+      mount('sidebar.footer.action', 6, '下载', SidebarRow)
+      // 手机 + 桌面：会话标题栏右侧的进度胶囊
+      mount('conversation.session.header.utilities', 6, '下载进度', HeaderChip)
 
-      // 桌面：侧边栏底部一行任务摘要
-      slots.inject('sidebar.footer.action', () => slots.register(
-        { name: 'sidebar.footer.action', id: 'chunk-download', order: 6, label: '下载' },
-        () => h(SidebarRow, null),
-      ))
-
+      report('apply: done')
     }
 
     exports.apply = apply

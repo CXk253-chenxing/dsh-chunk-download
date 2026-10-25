@@ -2,6 +2,16 @@
 
 版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；本项目处于 `0.x`，接口仍可能调整。
 
+## [0.3.1] - 2026-10-25
+
+### 修复
+
+- **某个槽位不存在不再拖垮整个客户端**：`slots.inject` 在缺少该槽位的布局（如手机端的
+  `sidebar.footer.action`）会抛错，之前一个失败就中断 apply，导致三个入口全部注册不上。
+  现在逐个 `mount()` 并各自 try/catch，互不影响。
+- 新增 `/chunk-download/ui-log` 路由：客户端把 apply / 注册 / 错误写回
+  `~/.dsh/chunk-download/ui.log`，没有控制台也能排查。
+
 ## [0.3.0] - 2026-10-25
 
 ### 界面

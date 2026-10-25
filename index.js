@@ -185,6 +185,24 @@ export function apply(ctx, config = {}) {
           }
         },
       }))
+      // 客户端自检日志：没有控制台时，用它确认客户端确实加载并注册了槽位
+      inner.effect(() => inner.webServer.register({
+        kind: 'exact',
+        path: '/chunk-download/ui-log',
+        handler: async (req, res) => {
+          if (req.method !== 'POST') {
+            sendJson(res, 405, { ok: false, error: '只接受 POST' })
+            return
+          }
+          try {
+            const body = await readBody(req, 32 * 1024)
+            const file = path.join(engine.stateDir, 'ui.log')
+            await fsp.mkdir(engine.stateDir, { recursive: true })
+            await fsp.appendFile(file, `${new Date().toISOString()} ${body}\n`)
+          } catch {}
+          sendJson(res, 200, { ok: true })
+        },
+      }))
       log('info', '进度接口已注册：/chunk-download/tasks')
     } catch (error) {
       log('warn', `注册进度接口失败：${error?.message ?? error}`)

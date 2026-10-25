@@ -56,7 +56,7 @@ test('客户端半身：加载格式 + 三个槽位注册', async () => {
 
   assert.deepEqual(
     registrations.map((r) => r.options.name),
-    ['conversation.session.header.utilities', 'conversation.input.dock', 'sidebar.footer.action'],
+    ['conversation.input.dock', 'sidebar.footer.action', 'conversation.session.header.utilities'],
   )
   assert.ok(
     !registrations.some((r) => r.options.name === 'shell.overlay'),
